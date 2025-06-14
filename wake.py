@@ -7,7 +7,7 @@ import json
 import wave
 import os
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "model")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "Vosk_model")
 WAKE_WORDS = ["ghost", "hey ghost", "wake up"]
 SAMPLE_RATE = 16000
 CHANNELS = 1
@@ -60,7 +60,7 @@ def detect_wake_word():
 
 def should_wake():
     from vision import is_person_detected_for
-    if is_person_detected_for(2.0):
+    if is_person_detected_for(1.0):
         print("👁️  Person detected for more than 2 seconds. Waking up.")
         return True
     if detect_wake_word():

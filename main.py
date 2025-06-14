@@ -1,9 +1,10 @@
 from face import start_face, get_face
-from wake import should_wake_up
-from transcribe import record_audio_and_transcribe
-from brain import process_prompt
-from speak import speak_text
-from act import perform_action
+from wake import should_wake
+from transcribe import audio_to_text
+from listen import record_audio
+from brain import init_llm, generate_reply
+from speak import talk_back
+# from act import perform_action
 from vision import constantly_check_detections
 
 import threading
@@ -26,20 +27,19 @@ def queue_shutdown():
 def monitor_wake():
     global last_interaction_time
     while True:
-        if should_wake_up():
+        if should_wake():
             print("👻 Wake trigger detected!")
             face_state = {"emotion": "happy", "duration": 3, "talking": True}
             queue_expression(face_state)
             last_interaction_time = time.time()
 
-            transcript = record_audio_and_transcribe()
+            audio = record_audio()
+            transcript = audio_to_text(audio)
             if transcript:
                 face_state = {"emotion": "neutral", "duration": 2, "talking": True}
                 queue_expression(face_state)
-                response, action = process_prompt(transcript)
-                speak_text(response)
-                if action:
-                    perform_action(action)
+                response = generate_reply(transcript)
+                talk_back(response)
 
             last_interaction_time = time.time()
         time.sleep(1)
@@ -57,6 +57,7 @@ def monitor_inactivity():
 
 # Start threads
 if __name__ == "__main__":
+    init_llm()
     threading.Thread(target=constantly_check_detections, daemon=True).start()
     threading.Thread(target=monitor_wake, daemon=True).start()
     threading.Thread(target=monitor_inactivity, daemon=True).start()

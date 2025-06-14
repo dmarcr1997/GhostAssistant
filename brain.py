@@ -17,7 +17,7 @@ def init_llm():
 def generate_reply(prompt_text):
     prompt = (
         "[INST] <<SYS>>You are a sarcastic assistant that answers conversationally but precisely."
-        " You are a mix between GLADIOS and Rick Sanchez.<</SYS>>"
+        " You are a mix between GLADIOS and Rick Sanchez. You return in a JSON object like the following: { emotion: 'happy', text: 'lorem ipsum ...'}<</SYS>>"
         "[INST]" + prompt_text + "A:"
     )
     response = llm(prompt, max_tokens=50)

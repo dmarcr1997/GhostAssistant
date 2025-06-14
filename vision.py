@@ -5,7 +5,7 @@ import time
 from tflite_runtime.interpreter import Interpreter
 
 # Load TFLite model
-interpreter = Interpreter("models/detect.tflite")
+interpreter = Interpreter("ssd_model/detect.tflite")
 interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
@@ -23,18 +23,23 @@ def check_tf_version(output_details):
 boxes_idx, classes_idx, scores_idx = check_tf_version(output_details)
 
 # Load label map
-with open("models/labelmap.txt", 'r') as f:
+with open("ssd_model/labelmap.txt", 'r') as f:
     labels = [line.strip() for line in f.readlines()]
 if labels[0] == '???':
     labels.pop(0)
 
-# Setup camera
+#start camera   
+frame_height = 1024
+frame_width = 600
 picam2 = Picamera2()
-picam2.preview_configuration.main.size = (1024, 600)
+picam2.preview_configuration.main.size = (frame_height, frame_width)
 picam2.preview_configuration.main.format = "RGB888"
+
+# Align configuration parameters based on camera sensor details.
 picam2.preview_configuration.align()
 picam2.start()
-time.sleep(1)
+
+time.sleep(1) 
 
 # Detection state
 last_detection_time = 0
