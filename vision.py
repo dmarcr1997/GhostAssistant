@@ -46,6 +46,9 @@ last_detection_time = 0
 last_detected_classes = []
 person_detected_duration = 0
 
+def get_camera():
+    return picam2
+
 # Main detection function
 
 def detect_objects(frame):

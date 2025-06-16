@@ -1,24 +1,14 @@
-# act.py
-# Action module for Ghost Assistant
-# Currently supports stubs for future automation and interactions
-
 import time
 import cv2
 import os
 from datetime import datetime
-from vision import get_recent_detections
-from picamera2 import Picamera2
-
-# Initialize camera for snapshot actions
-camera = Picamera2()
-camera.preview_configuration.main.size = (1024, 600)
-camera.preview_configuration.main.format = "RGB888"
-camera.preview_configuration.align()
-camera.start()
-time.sleep(1)
+from vision import get_recent_detections, get_camera
+from log import send_discord
+from speak import talk_back
 
 def capture_image(label="snapshot"):
     """Capture a still image from camera and save it."""
+    camera = get_camera()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"images/{label}_{timestamp}.jpg"
     frame = camera.capture_array()
@@ -43,8 +33,11 @@ def perform_action(action_name):
     """Perform a generic action, placeholder for future expansion."""
     print(f"⚙️ Performing action: {action_name}")
     if action_name == "capture":
-        return capture_image()
+        image = capture_image()
+        send_discord(image, "Captured Image", True)
+        return
     elif action_name == "describe":
-        return describe_current_scene()
+        talk_back(describe_current_scene())
+        return
     else:
         return f"Action '{action_name}' is not implemented yet."

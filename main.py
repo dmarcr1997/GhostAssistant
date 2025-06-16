@@ -4,7 +4,10 @@ from transcribe import audio_to_text
 from listen import record_audio
 from brain import init_llm, generate_reply
 from speak import talk_back
-# from act import perform_action
+from act import perform_action
+import json
+import re
+
 from vision import constantly_check_detections
 
 import threading
@@ -35,14 +38,47 @@ def monitor_wake():
 
             audio = record_audio()
             transcript = audio_to_text(audio)
-            if transcript:
+            print(transcript)
+            if 'picture' in transcript:
+                face_state = {"emotion": "excited", "duration": 3, "talking": False}
+                perform_action('capture')
+            elif 'describe' in transcript and 'frame' in transcript:
+                face_state = {"emotion": "love", "duration": 3, "talking": False}
+                perform_action('describe')
+            elif 'shutdown' in transcript or 'shut down' in transcript:
+                queue_shutdown()
+                time.sleep(2000)
+                break
+            elif transcript:
                 face_state = {"emotion": "neutral", "duration": 2, "talking": True}
                 queue_expression(face_state)
-                response = generate_reply(transcript)
-                talk_back(response)
+                response = clean_json_response(generate_reply(transcript))
+                talk_text = response
+                try:
+                    data = json.loads(response)
+                    if 'emotion' in data:
+                        face_state = {"emotion": data['emotion'], "duration": 2, "talking": True}
+                    if 'text' in data:
+                        talk_text = data['text']
+                except json.JSONDecodeError:
+                    print("🛑 LLM response not in JSON format. Raw output:", response)
+                    talk_back("I had a brain fart. Try again.")
+                    continue
+                queue_expression(face_state)
+                talk_back(talk_text)
 
             last_interaction_time = time.time()
         time.sleep(1)
+
+def clean_json_response(raw_response):
+    # Strip markdown/code block syntax
+    raw_response = raw_response.replace("```json", "").replace("```", "").strip()
+    # Try to extract JSON if anything wraps it
+    match = re.search(r'\{.*?\}', raw_response, re.DOTALL)
+    if match:
+        return match.group(0)
+    return raw_response
+
 
 # Background inactivity monitor
 
