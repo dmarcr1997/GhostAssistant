@@ -1,3 +1,4 @@
 config.json
 *.gguf
 *.wav
+images
