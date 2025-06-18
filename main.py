@@ -34,24 +34,39 @@ def monitor_wake():
             print("👻 Wake trigger detected!")
             face_state = {"emotion": "happy", "duration": 3, "talking": True}
             queue_expression(face_state)
+            talk_back("Hello! What's up?")
             last_interaction_time = time.time()
 
             audio = record_audio()
             transcript = audio_to_text(audio)
             print(transcript)
             if 'picture' in transcript:
-                face_state = {"emotion": "excited", "duration": 3, "talking": False}
+                face_state = {"emotion": "excited", "duration": 3, "talking": True}
+                queue_expression(face_state)
+                talk_back("Sending over a picture!")
                 perform_action('capture')
             elif 'describe' in transcript and 'frame' in transcript:
-                face_state = {"emotion": "love", "duration": 3, "talking": False}
+                face_state = {"emotion": "love", "duration": 3, "talking": True}
+                queue_expression(face_state)
+                talk_back("Let me see...")
                 perform_action('describe')
             elif 'shutdown' in transcript or 'shut down' in transcript:
+                talk_back('SHUTTING DOWN...')
+                talk_back(
+                    "AAEEEEAAEEEEE AAEEEEAAEEEEE AAEEEEAAEEEEE!",
+                    "output.wav",
+                    "en+m1", 
+                    500, 
+                    99, 
+                    200
+                )
                 queue_shutdown()
                 time.sleep(2000)
                 break
             elif transcript:
                 face_state = {"emotion": "neutral", "duration": 2, "talking": True}
                 queue_expression(face_state)
+                talk_back("Let me see...")
                 response = clean_json_response(generate_reply(transcript))
                 talk_text = response
                 try:
