@@ -14,7 +14,7 @@ def send_zigbee_command(event="scene.game_mode"):
         "Authorization": f"Bearer {TOKEN}",
         "Content-Type":  "application/json",
     }
-    url = f"{HA_URL}/api/services/scene/toggle"
+    url = f"{HA_URL}/api/services/scene/turn_on"
     try:
         resp = requests.post(url, headers=HEADERS, json={"entity_id": event})
         resp.raise_for_status()

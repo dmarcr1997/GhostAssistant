@@ -26,22 +26,25 @@ def queue_expression(face_state):
 def queue_shutdown():
     get_face().shutdown_signal.emit()
 
-# Background check for wake triggers
-
-def monitor_wake():
+def update_last_interaction():
     global last_interaction_time
+    last_interaction_time = time.time()
+
+# Background check for wake triggers
+def monitor_wake():
     while True:
         if should_wake():
+            update_last_interaction()
             send_zigbee_command()
             print("👻 Wake trigger detected!")
             face_state = {"emotion": "happy", "duration": 3, "talking": True}
             queue_expression(face_state)
             talk_back("Hello! What's up?")
-            last_interaction_time = time.time()
+            queue_expression({"emotion": "excited", "duration": 1, "talking": False})
 
             audio = record_audio()
             transcript = audio_to_text(audio)
-            print(transcript)
+            
             if 'picture' in transcript:
                 face_state = {"emotion": "excited", "duration": 3, "talking": True}
                 queue_expression(face_state)
@@ -63,10 +66,10 @@ def monitor_wake():
                     200
                 )
                 queue_shutdown()
-                time.sleep(2000)
+                time.sleep(2)
                 break
             elif transcript:
-                face_state = {"emotion": "neutral", "duration": 2, "talking": True}
+                face_state = {"emotion": "happy", "duration": 2, "talking": True}
                 queue_expression(face_state)
                 talk_back("Let me see...")
                 response = clean_json_response(generate_reply(transcript))
@@ -85,7 +88,7 @@ def monitor_wake():
                 talk_back(talk_text)
 
             last_interaction_time = time.time()
-        time.sleep(1)
+        time.sleep(0.2)
 
 def clean_json_response(raw_response):
     # Strip markdown/code block syntax
@@ -106,7 +109,8 @@ def monitor_inactivity():
             print("😴 Going to sleep due to inactivity.")
             queue_expression({"emotion": "sleep", "duration": 1, "talking": False})
             last_interaction_time = time.time()
-        time.sleep(10)
+            send_zigbee_command("scene.moviemode")
+        time.sleep(2)
 
 # Start threads
 if __name__ == "__main__":
