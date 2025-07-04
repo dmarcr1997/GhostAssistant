@@ -2,3 +2,4 @@ config.json
 *.gguf
 *.wav
 images
+__pycache__/*
