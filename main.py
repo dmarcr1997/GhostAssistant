@@ -9,6 +9,7 @@ import json
 import re
 
 from vision import constantly_check_detections
+from local_assist import send_zigbee_command
 
 import threading
 import time
@@ -31,6 +32,7 @@ def monitor_wake():
     global last_interaction_time
     while True:
         if should_wake():
+            send_zigbee_command()
             print("👻 Wake trigger detected!")
             face_state = {"emotion": "happy", "duration": 3, "talking": True}
             queue_expression(face_state)
